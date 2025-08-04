@@ -300,11 +300,11 @@ const handleActivityAdded = (newActivity) => {
             <div>
               {contacts.length > 0 ? (
                 <div className="space-y-3">
-                  {contacts.map((contact) => (
+{contacts.map((contact) => (
                     <div key={contact.Id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="h-10 w-10 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center">
                         <span className="text-indigo-600 text-sm font-medium">
-                          {contact.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+                          {contact.name?.split(" ").map(n => n[0]).join("").toUpperCase() || 'U'}
                         </span>
                       </div>
                       <div className="flex-1">
