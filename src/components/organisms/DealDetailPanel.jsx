@@ -121,7 +121,7 @@ return (
           <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{deal.name}</h2>
+<h2 className="text-2xl font-bold text-gray-900">{deal.Name || deal.name}</h2>
                 <div className="flex items-center gap-2 mt-2">
                   <div className={`w-3 h-3 rounded-full ${currentStage.color}`}></div>
                   <span className={`font-medium ${currentStage.textColor}`}>

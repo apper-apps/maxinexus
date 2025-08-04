@@ -76,18 +76,18 @@ const handleSearch = useCallback(async (query) => {
       // Apply search query
       if (query && query.trim()) {
         const searchTerm = query.toLowerCase().trim()
-        results = results.filter(contact => 
-          contact.name.toLowerCase().includes(searchTerm) ||
-          contact.email.toLowerCase().includes(searchTerm) ||
-          (contact.company && contact.company.toLowerCase().includes(searchTerm)) ||
-          contact.phone.includes(searchTerm)
+results = results.filter(contact => 
+          (contact.Name || contact.name || '').toLowerCase().includes(searchTerm) ||
+          (contact.email || '').toLowerCase().includes(searchTerm) ||
+          ((contact.companyName || contact.company || '')).toLowerCase().includes(searchTerm) ||
+          (contact.phone || '').includes(searchTerm)
         )
       }
       
       // Apply company filter
-      if (currentFilters.company) {
+if (currentFilters.company) {
         results = results.filter(contact =>
-          contact.company && contact.company.toLowerCase().includes(currentFilters.company.toLowerCase())
+          (contact.companyName || contact.company || '').toLowerCase().includes(currentFilters.company.toLowerCase())
         )
       }
       
@@ -135,15 +135,14 @@ const handleContactSelect = (contact) => {
       
       if (company) {
         // Find contacts for this company
-        const companyContacts = contacts.filter(contact => 
+const companyContacts = contacts.filter(contact => 
           contact.companyId === company.Id || 
-          contact.company === company.name ||
-          contact.companyName === company.name
+          (contact.companyName || contact.company) === (company.Name || company.name)
         )
         
         // You can extend this to show company detail panel or navigate
         // For now, we'll show a toast with company info
-        toast.info(`Viewing ${company.name} (${companyContacts.length} contacts)`)
+toast.info(`Viewing ${company.Name || company.name} (${companyContacts.length} contacts)`)
         
         // If you have a company detail panel, you could set it here:
         // setSelectedCompany(company)
@@ -221,8 +220,8 @@ const handleQuickAction = (contact, actionType) => {
     if (actionType === 'call') {
       preData = {
         type: 'call',
-        title: `Call with ${contact.name}`,
-        description: `Phone call with ${contact.name}`,
+title: `Call with ${contact.Name || contact.name}`,
+        description: `Phone call with ${contact.Name || contact.name}`,
         outcome: '',
         date: new Date().toISOString().slice(0, 16)
       }
@@ -231,9 +230,9 @@ const handleQuickAction = (contact, actionType) => {
       followUpDate.setDate(followUpDate.getDate() + 1) // Default to tomorrow
       
       preData = {
-        type: 'task',
-        title: `Follow up with ${contact.name}`,
-        description: `Schedule follow-up with ${contact.name}`,
+title: `Follow up with ${contact.Name || contact.name}`,
+        description: `Schedule follow-up with ${contact.Name || contact.name}`,
+        outcome: '',
         outcome: '',
         date: new Date().toISOString().slice(0, 16),
         dueDate: followUpDate.toISOString().slice(0, 16),

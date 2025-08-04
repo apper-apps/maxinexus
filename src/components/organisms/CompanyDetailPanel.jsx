@@ -97,10 +97,10 @@ const handleActivityAdded = (newActivity) => {
           <div className="text-center mb-6">
             <div className="h-20 w-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-2xl font-bold">
-                {company.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+{(company.Name || company.name || '').split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
               </span>
             </div>
-<h3 className="text-xl font-bold text-gray-900">{company.name}</h3>
+<h3 className="text-xl font-bold text-gray-900">{company.Name || company.name}</h3>
             <p className="text-gray-600">{company.industry}</p>
           </div>
 

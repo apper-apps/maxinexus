@@ -1,137 +1,313 @@
-import contactsData from "@/services/mockData/contacts.json"
-import { activityService } from "@/services/api/activityService"
-
-let contacts = [...contactsData]
-
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 export const contactService = {
   async getAll() {
-    await delay(300)
-    return [...contacts]
+    try {
+      await delay(300)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "phone" } },
+          { field: { Name: "companyName" } },
+          { field: { Name: "firstName" } },
+          { field: { Name: "lastName" } },
+          { field: { Name: "jobTitle" } },
+          { field: { Name: "notes" } },
+          { field: { Name: "lastContactDate" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "companyId" } }
+        ],
+        orderBy: [{ fieldName: "Name", sorttype: "ASC" }]
+      }
+      
+      const response = await apperClient.fetchRecords('app_contact', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching contacts:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error fetching contacts:", error.message)
+        throw error
+      }
+    }
   },
 
   async getById(id) {
-    await delay(200)
-    const contact = contacts.find(c => c.Id === parseInt(id))
-    if (!contact) {
-      throw new Error("Contact not found")
+    try {
+      await delay(200)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "email" } },
+          { field: { Name: "phone" } },
+          { field: { Name: "companyName" } },
+          { field: { Name: "firstName" } },
+          { field: { Name: "lastName" } },
+          { field: { Name: "jobTitle" } },
+          { field: { Name: "notes" } },
+          { field: { Name: "lastContactDate" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "companyId" } }
+        ]
+      }
+      
+      const response = await apperClient.getRecordById('app_contact', parseInt(id), params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching contact with ID ${id}:`, error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error(`Error fetching contact with ID ${id}:`, error.message)
+        throw error
+      }
     }
-    return { ...contact }
   },
 
   async create(contactData) {
-    await delay(400)
-    const newContact = {
-      Id: Math.max(...contacts.map(c => c.Id)) + 1,
-      ...contactData,
-      // Ensure backward compatibility - if only company name provided, use it
-      company: contactData.companyName || contactData.company || "",
-      createdAt: new Date().toISOString().split("T")[0],
-      lastContactDate: new Date().toISOString().split("T")[0]
-    }
-    contacts.push(newContact)
-
-    // Log contact creation activity
     try {
-      await activityService.create({
-        type: 'note',
-        title: 'Contact Added to CRM',
-        description: `${newContact.name} from ${newContact.company || 'Unknown Company'} was added to the CRM system.`,
-        outcome: 'Contact created successfully',
-        date: new Date().toISOString(),
-        entityType: 'contact',
-        entityId: newContact.Id
+      await delay(400)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       })
+      
+      // Only include updateable fields
+      const createData = {
+        Name: contactData.name || `${contactData.firstName || ''} ${contactData.lastName || ''}`.trim(),
+        email: contactData.email || '',
+        phone: contactData.phone || '',
+        companyName: contactData.companyName || contactData.company || '',
+        firstName: contactData.firstName || '',
+        lastName: contactData.lastName || '',
+        jobTitle: contactData.jobTitle || '',
+        notes: contactData.notes || '',
+        lastContactDate: new Date().toISOString().split("T")[0],
+        createdAt: new Date().toISOString().split("T")[0]
+      }
+      
+      // Handle companyId if provided
+      if (contactData.companyId) {
+        createData.companyId = parseInt(contactData.companyId)
+      }
+      
+      const params = {
+        records: [createData]
+      }
+      
+      const response = await apperClient.createRecord('app_contact', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create contacts ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        const successfulRecords = response.results.filter(result => result.success)
+        return successfulRecords[0]?.data
+      }
     } catch (error) {
-      console.warn('Failed to log contact creation activity:', error)
+      if (error?.response?.data?.message) {
+        console.error("Error creating contact:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error creating contact:", error.message)
+        throw error
+      }
     }
-
-    return { ...newContact }
   },
 
   async update(id, contactData) {
-    await delay(350)
-    const index = contacts.findIndex(c => c.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Contact not found")
-    }
-    
-    const oldContact = { ...contacts[index] }
-    
-    // Update contact with new data, ensure company field is set for backward compatibility
-    const updatedData = {
-      ...contactData,
-      company: contactData.companyName || contactData.company || contacts[index].company
-    }
-    contacts[index] = { ...contacts[index], ...updatedData }
-
-    // Log contact update activity
     try {
-      const changes = []
-      if (oldContact.name !== contacts[index].name) changes.push(`name changed from "${oldContact.name}" to "${contacts[index].name}"`)
-      if (oldContact.email !== contacts[index].email) changes.push(`email updated`)
-      if (oldContact.phone !== contacts[index].phone) changes.push(`phone updated`)
-      if (oldContact.company !== contacts[index].company) changes.push(`company changed`)
-
-      if (changes.length > 0) {
-        await activityService.create({
-          type: 'note',
-          title: 'Contact Information Updated',
-          description: `Contact details modified: ${changes.join(', ')}.`,
-          outcome: 'Contact updated successfully',
-          date: new Date().toISOString(),
-          entityType: 'contact',
-          entityId: parseInt(id)
-        })
+      await delay(350)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      // Only include updateable fields
+      const updateData = {
+        Id: parseInt(id),
+        Name: contactData.name || `${contactData.firstName || ''} ${contactData.lastName || ''}`.trim(),
+        email: contactData.email || '',
+        phone: contactData.phone || '',
+        companyName: contactData.companyName || contactData.company || '',
+        firstName: contactData.firstName || '',
+        lastName: contactData.lastName || '',
+        jobTitle: contactData.jobTitle || '',
+        notes: contactData.notes || '',
+        lastContactDate: new Date().toISOString().split("T")[0]
+      }
+      
+      // Handle companyId if provided
+      if (contactData.companyId) {
+        updateData.companyId = parseInt(contactData.companyId)
+      }
+      
+      const params = {
+        records: [updateData]
+      }
+      
+      const response = await apperClient.updateRecord('app_contact', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update contacts ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        const successfulRecords = response.results.filter(result => result.success)
+        return successfulRecords[0]?.data
       }
     } catch (error) {
-      console.warn('Failed to log contact update activity:', error)
+      if (error?.response?.data?.message) {
+        console.error("Error updating contact:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error updating contact:", error.message)
+        throw error
+      }
     }
-
-    return { ...contacts[index] }
   },
 
   async delete(id) {
-    await delay(250)
-    const index = contacts.findIndex(c => c.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Contact not found")
+    try {
+      await delay(250)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      }
+      
+      const response = await apperClient.deleteRecord('app_contact', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete contacts ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        return true
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting contact:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error deleting contact:", error.message)
+        throw error
+      }
     }
-    const deletedContact = contacts[index]
-    contacts.splice(index, 1)
-    return { ...deletedContact }
   },
 
   async search(query) {
-    await delay(200)
-    if (!query || query.trim() === "") {
-      return [...contacts]
+    try {
+      const allContacts = await this.getAll()
+      
+      if (!query || query.trim() === "") {
+        return allContacts
+      }
+      
+      const searchTerm = query.toLowerCase().trim()
+      const filtered = allContacts.filter(contact => 
+        (contact.Name && contact.Name.toLowerCase().includes(searchTerm)) ||
+        (contact.email && contact.email.toLowerCase().includes(searchTerm)) ||
+        (contact.companyName && contact.companyName.toLowerCase().includes(searchTerm)) ||
+        (contact.phone && contact.phone.includes(searchTerm))
+      )
+      
+      return filtered
+    } catch (error) {
+      console.error("Error searching contacts:", error.message)
+      throw error
     }
-    
-    const searchTerm = query.toLowerCase().trim()
-    const filtered = contacts.filter(contact => 
-      contact.name.toLowerCase().includes(searchTerm) ||
-      contact.email.toLowerCase().includes(searchTerm) ||
-      (contact.company && contact.company.toLowerCase().includes(searchTerm)) ||
-      (contact.companyName && contact.companyName.toLowerCase().includes(searchTerm)) ||
-      contact.phone.includes(searchTerm)
-    )
-    
-    return [...filtered]
   },
 
   async getActivities(contactId) {
     try {
+      const { activityService } = await import('@/services/api/activityService')
       return await activityService.getByEntity('contact', contactId)
     } catch (error) {
       console.error('Error fetching contact activities:', error)
       return []
-}
+    }
   },
 
   async getTotalCount() {
-    await delay(200)
-    return contacts.length
+    try {
+      const contacts = await this.getAll()
+      return contacts.length
+    } catch (error) {
+      console.error("Error getting total contact count:", error.message)
+      return 0
+    }
   }
 }

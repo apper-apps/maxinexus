@@ -23,22 +23,23 @@ const CompaniesTable = ({
     }
   };
 
-  const sortedCompanies = [...companies].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
+const sortedCompanies = [...companies].sort((a, b) => {
+    const fieldName = sortField === 'name' ? 'Name' : sortField
+    const aValue = a[fieldName]
+    const bValue = b[fieldName]
     
     if (typeof aValue === 'string') {
-      const comparison = aValue.localeCompare(bValue);
-      return sortDirection === 'asc' ? comparison : -comparison;
+      const comparison = aValue.localeCompare(bValue)
+      return sortDirection === 'asc' ? comparison : -comparison
     }
     
     if (typeof aValue === 'number') {
-      const comparison = aValue - bValue;
-      return sortDirection === 'asc' ? comparison : -comparison;
+      const comparison = aValue - bValue
+      return sortDirection === 'asc' ? comparison : -comparison
     }
     
-    return 0;
-  });
+    return 0
+  })
 
   const formatEmployeeCount = (count) => {
     if (count >= 1000) {
@@ -146,8 +147,8 @@ const CompaniesTable = ({
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {company.name}
+<div className="text-sm font-medium text-gray-900">
+                        {company.Name || company.name}
                       </div>
                       {company.website && (
                         <div className="text-sm text-gray-500">

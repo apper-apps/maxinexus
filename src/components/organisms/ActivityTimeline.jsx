@@ -120,8 +120,8 @@ const ActivityTimeline = ({ entityType, entityId, activities, onActivityUpdate }
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-gray-900 truncate">
-                          {activity.title}
+<h4 className="font-medium text-gray-900 truncate">
+                          {activity.title || activity.Name}
                         </h4>
                         {activity.type === 'task' && (
                           <Button

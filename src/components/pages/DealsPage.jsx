@@ -73,11 +73,11 @@ function ErrorBoundary({ children, fallback }) {
 
 // Memoized DealCard to prevent unnecessary re-renders
 const MemoizedDealCard = memo(DealCard, (prevProps, nextProps) => {
-  return prevProps.deal?.Id === nextProps.deal?.Id && 
-         prevProps.deal?.Name === nextProps.deal?.Name &&
-         prevProps.deal?.Amount === nextProps.deal?.Amount &&
-         prevProps.deal?.Stage === nextProps.deal?.Stage;
-});
+return prevProps.deal?.Id === nextProps.deal?.Id && 
+         (prevProps.deal?.Name || prevProps.deal?.name) === (nextProps.deal?.Name || nextProps.deal?.name) &&
+         prevProps.deal?.value === nextProps.deal?.value &&
+         prevProps.deal?.stage === nextProps.deal?.stage
+})
 
 const PIPELINE_STAGES = [
   { id: 'lead', name: 'Lead', color: 'bg-blue-500', count: 0 },
@@ -131,10 +131,10 @@ const filterDeals = useCallback(() => {
 
     // Search filter
     if (searchTerm && searchTerm.trim()) {
-      filtered = filtered.filter(deal =>
-        deal?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        deal?.contact?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+filtered = filtered.filter(deal =>
+        (deal?.Name || deal?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (deal?.contact || '').toLowerCase().includes(searchTerm.toLowerCase())
+      )
     }
 
     // Stage filter - defensive null checking

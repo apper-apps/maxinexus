@@ -43,8 +43,8 @@ return (
       <CardContent className="p-4">
         <div className="space-y-3">
           {/* Deal Name */}
-          <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2">
-            {deal.name}
+<h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2">
+            {deal.Name || deal.name}
           </h3>
 
           {/* Deal Value */}

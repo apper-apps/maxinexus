@@ -84,12 +84,12 @@ const handleActivityAdded = (newActivity) => {
           {/* Contact Avatar & Name */}
           <div className="text-center mb-6">
             <div className="h-20 w-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl font-bold">
-                {contact.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+<span className="text-white text-2xl font-bold">
+                {(contact.Name || contact.name || '').split(" ").map(n => n[0]).join("").toUpperCase()}
               </span>
             </div>
-<h3 className="text-xl font-bold text-gray-900">{contact.name}</h3>
-            <p className="text-gray-600">{contact.company}</p>
+<h3 className="text-xl font-bold text-gray-900">{contact.Name || contact.name}</h3>
+            <p className="text-gray-600">{contact.companyName || contact.company}</p>
           </div>
 
           {/* Activity Summary Cards */}
@@ -205,7 +205,7 @@ const handleActivityAdded = (newActivity) => {
                       <ApperIcon name="Building2" className="h-4 w-4 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{contact.company}</p>
+<p className="text-sm font-medium text-gray-900">{contact.companyName || contact.company}</p>
                       <p className="text-xs text-gray-500">Company</p>
                     </div>
                   </div>

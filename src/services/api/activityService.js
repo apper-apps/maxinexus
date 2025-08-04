@@ -1,86 +1,381 @@
-import activitiesData from "@/services/mockData/activities.json"
-
-let activities = [...activitiesData]
-
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 export const activityService = {
   async getAll() {
-    await delay(300)
-    return [...activities]
+    try {
+      await delay(300)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "type" } },
+          { field: { Name: "title" } },
+          { field: { Name: "description" } },
+          { field: { Name: "outcome" } },
+          { field: { Name: "date" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "dueDate" } },
+          { field: { Name: "completed" } }
+        ],
+        orderBy: [{ fieldName: "date", sorttype: "DESC" }]
+      }
+      
+      const response = await apperClient.fetchRecords('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching activities:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error fetching activities:", error.message)
+        throw error
+      }
+    }
   },
 
   async getById(id) {
-    await delay(200)
-    const activity = activities.find(a => a.Id === parseInt(id))
-    if (!activity) {
-      throw new Error("Activity not found")
+    try {
+      await delay(200)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "type" } },
+          { field: { Name: "title" } },
+          { field: { Name: "description" } },
+          { field: { Name: "outcome" } },
+          { field: { Name: "date" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "dueDate" } },
+          { field: { Name: "completed" } }
+        ]
+      }
+      
+      const response = await apperClient.getRecordById('app_Activity', parseInt(id), params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching activity with ID ${id}:`, error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error(`Error fetching activity with ID ${id}:`, error.message)
+        throw error
+      }
     }
-    return { ...activity }
   },
 
   async getByEntity(entityType, entityId) {
-    await delay(200)
-    const entityActivities = activities.filter(
-      a => a.entityType === entityType && a.entityId === parseInt(entityId)
-    )
-    // Sort by date descending (newest first)
-    return [...entityActivities].sort((a, b) => new Date(b.date) - new Date(a.date))
+    try {
+      await delay(200)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "type" } },
+          { field: { Name: "title" } },
+          { field: { Name: "description" } },
+          { field: { Name: "outcome" } },
+          { field: { Name: "date" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "dueDate" } },
+          { field: { Name: "completed" } }
+        ],
+        where: [
+          {
+            FieldName: "entityType",
+            Operator: "EqualTo",
+            Values: [entityType]
+          },
+          {
+            FieldName: "entityId",
+            Operator: "EqualTo", 
+            Values: [parseInt(entityId)]
+          }
+        ],
+        orderBy: [{ fieldName: "date", sorttype: "DESC" }]
+      }
+      
+      const response = await apperClient.fetchRecords('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error(`Error fetching activities for ${entityType} ${entityId}:`, error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error(`Error fetching activities for ${entityType} ${entityId}:`, error.message)
+        throw error
+      }
+    }
   },
 
   async create(activityData) {
-    await delay(400)
-    const newActivity = {
-      Id: Math.max(...activities.map(a => a.Id)) + 1,
-      ...activityData,
-      createdAt: new Date().toISOString(),
-      createdBy: "Current User" // In a real app, this would come from auth
+    try {
+      await delay(400)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      // Only include updateable fields
+      const createData = {
+        Name: activityData.title || activityData.Name || '',
+        type: activityData.type || 'note',
+        title: activityData.title || '',
+        description: activityData.description || '',
+        outcome: activityData.outcome || '',
+        date: activityData.date || new Date().toISOString(),
+        entityType: activityData.entityType || '',
+        entityId: parseInt(activityData.entityId) || 0,
+        createdAt: new Date().toISOString()
+      }
+      
+      // Handle task-specific fields
+      if (activityData.type === 'task') {
+        createData.dueDate = activityData.dueDate || ''
+        createData.completed = activityData.completed || false
+      }
+      
+      const params = {
+        records: [createData]
+      }
+      
+      const response = await apperClient.createRecord('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create activities ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        const successfulRecords = response.results.filter(result => result.success)
+        return successfulRecords[0]?.data
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error creating activity:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error creating activity:", error.message)
+        throw error
+      }
     }
-    activities.push(newActivity)
-    return { ...newActivity }
   },
 
   async update(id, activityData) {
-    await delay(350)
-    const index = activities.findIndex(a => a.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Activity not found")
+    try {
+      await delay(350)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      // Only include updateable fields
+      const updateData = {
+        Id: parseInt(id),
+        ...activityData
+      }
+      
+      // Ensure proper field mapping
+      if (updateData.title && !updateData.Name) {
+        updateData.Name = updateData.title
+      }
+      
+      const params = {
+        records: [updateData]
+      }
+      
+      const response = await apperClient.updateRecord('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update activities ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            record.errors?.forEach(error => {
+              throw new Error(`${error.fieldLabel}: ${error.message}`)
+            })
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        const successfulRecords = response.results.filter(result => result.success)
+        return successfulRecords[0]?.data
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error updating activity:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error updating activity:", error.message)
+        throw error
+      }
     }
-    activities[index] = { ...activities[index], ...activityData }
-    return { ...activities[index] }
   },
 
   async delete(id) {
-    await delay(250)
-    const index = activities.findIndex(a => a.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Activity not found")
+    try {
+      await delay(250)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        RecordIds: [parseInt(id)]
+      }
+      
+      const response = await apperClient.deleteRecord('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success)
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete activities ${failedRecords.length} records:${JSON.stringify(failedRecords)}`)
+          
+          failedRecords.forEach(record => {
+            if (record.message) throw new Error(record.message)
+          })
+        }
+        
+        return true
+      }
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error deleting activity:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error deleting activity:", error.message)
+        throw error
+      }
     }
-    const deletedActivity = activities[index]
-    activities.splice(index, 1)
-    return { ...deletedActivity }
   },
 
   async markTaskComplete(id, completed = true) {
-    await delay(200)
-    const index = activities.findIndex(a => a.Id === parseInt(id))
-    if (index === -1) {
-      throw new Error("Activity not found")
+    try {
+      await delay(200)
+      return await this.update(id, {
+        completed: completed,
+        outcome: completed ? "Completed" : "In progress"
+      })
+    } catch (error) {
+      console.error("Error marking task complete:", error.message)
+      throw error
     }
-    if (activities[index].type !== 'task') {
-      throw new Error("Activity is not a task")
-    }
-    activities[index].completed = completed
-activities[index].outcome = completed ? "Completed" : "In progress"
-    return { ...activities[index] }
   },
 
   async getRecentActivities(limit = 10) {
-    await delay(200)
-    // Sort all activities by date descending (newest first) and limit results
-    const sortedActivities = [...activities]
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, limit)
-    return sortedActivities
+    try {
+      await delay(200)
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "type" } },
+          { field: { Name: "title" } },
+          { field: { Name: "description" } },
+          { field: { Name: "outcome" } },
+          { field: { Name: "date" } },
+          { field: { Name: "entityType" } },
+          { field: { Name: "entityId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "dueDate" } },
+          { field: { Name: "completed" } }
+        ],
+        orderBy: [{ fieldName: "date", sorttype: "DESC" }],
+        pagingInfo: {
+          limit: limit,
+          offset: 0
+        }
+      }
+      
+      const response = await apperClient.fetchRecords('app_Activity', params)
+      
+      if (!response.success) {
+        console.error(response.message)
+        throw new Error(response.message)
+      }
+      
+      return response.data || []
+    } catch (error) {
+      if (error?.response?.data?.message) {
+        console.error("Error fetching recent activities:", error?.response?.data?.message)
+        throw new Error(error?.response?.data?.message)
+      } else {
+        console.error("Error fetching recent activities:", error.message)
+        throw error
+      }
+    }
   }
 }

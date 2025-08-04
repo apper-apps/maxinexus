@@ -66,14 +66,13 @@ const handleSubmit = async (e) => {
 
     setIsSubmitting(true)
     try {
-      const selectedContact = contacts.find(c => c.Id === parseInt(formData.contactId))
+const selectedContact = contacts.find(c => c.Id === parseInt(formData.contactId))
       const selectedCompany = companies.find(c => c.Id === parseInt(formData.companyId))
-      
       await onAdd({
         ...formData,
-        value: parseFloat(formData.value),
-        contactName: selectedContact?.name || '',
-        companyName: selectedCompany?.name || ''
+value: parseFloat(formData.value),
+        contactName: selectedContact?.Name || selectedContact?.name || '',
+        companyName: selectedCompany?.Name || selectedCompany?.name || ''
       })
       
       // Reset form
@@ -202,8 +201,8 @@ const handleChange = (field, value) => {
                 >
                   <option value="">Select a contact</option>
                   {contacts.map(contact => (
-                    <option key={contact.Id} value={contact.Id}>
-                      {contact.name}
+<option key={contact.Id} value={contact.Id}>
+                      {contact.Name || contact.name}
                     </option>
                   ))}
                 </select>
@@ -216,9 +215,9 @@ const handleChange = (field, value) => {
                   className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${errors.companyId ? 'border-red-500' : ''}`}
                 >
                   <option value="">Select a company</option>
-                  {companies.map(company => (
+{companies.map(company => (
                     <option key={company.Id} value={company.Id}>
-                      {company.name}
+                      {company.Name || company.name}
                     </option>
                   ))}
                 </select>

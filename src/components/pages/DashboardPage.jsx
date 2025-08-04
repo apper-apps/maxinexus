@@ -443,7 +443,7 @@ currentMonthSales,
           <CardContent className="pt-0">
             <div className="space-y-3 lg:space-y-4 max-h-80 lg:max-h-96 overflow-y-auto">
               {metrics.recentActivities.length > 0 ? (
-                metrics.recentActivities.map((activity) => {
+metrics.recentActivities.map((activity) => {
                   const getActivityIcon = (type) => {
                     const icons = {
                       call: "Phone",
@@ -496,7 +496,7 @@ currentMonthSales,
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="text-xs lg:text-sm font-medium text-gray-900 truncate">
-                            {activity.title}
+                            {activity.title || activity.Name}
                           </h4>
                           <span className="text-xs text-gray-500 flex-shrink-0">
                             {formatRelativeTime(activity.date)}
