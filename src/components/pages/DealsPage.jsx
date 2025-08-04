@@ -12,8 +12,10 @@ import Error from '@/components/ui/Error'
 import Empty from '@/components/ui/Empty'
 import Button from '@/components/atoms/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Card'
-// Note: react-beautiful-dnd shows defaultProps warnings in React 18.3+
-// This is a known library issue. Consider migrating to @dnd-kit/core for long-term compatibility.
+// Note: The Connect(Droppable) defaultProps warning is from react-beautiful-dnd library
+// This is a known issue - the library uses deprecated defaultProps patterns that React 18.3+ warns about
+// The warning doesn't affect functionality but indicates future incompatibility
+// For long-term solution, consider migrating to @dnd-kit/core which is actively maintained and React 18+ compatible
 
 // Modern error boundary component using JavaScript default parameters (React 18.3+ recommended pattern)
 function ErrorBoundary({ children, fallback = <div>Something went wrong.</div> }) {
