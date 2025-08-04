@@ -1,21 +1,20 @@
-import React, { memo, useCallback, useEffect, useState } from 'react'
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { toast } from 'react-toastify'
-import { dealService } from '@/services/api/dealService'
-import ApperIcon from '@/components/ApperIcon'
-import DealCard from '@/components/organisms/DealCard'
-import DealDetailPanel from '@/components/organisms/DealDetailPanel'
-import AddDealModal from '@/components/organisms/AddDealModal'
-import AdvancedSearchPanel from '@/components/molecules/AdvancedSearchPanel'
-import Loading from '@/components/ui/Loading'
-import Error from '@/components/ui/Error'
-import Empty from '@/components/ui/Empty'
-import Button from '@/components/atoms/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Card'
-// Note: The Connect(Droppable) defaultProps warning is from react-beautiful-dnd library
-// This is a known issue - the library uses deprecated defaultProps patterns that React 18.3+ warns about
-// The warning doesn't affect functionality but indicates future incompatibility
-// For long-term solution, consider migrating to @dnd-kit/core which is actively maintained and React 18+ compatible
+import React, { memo, useCallback, useEffect, useState } from "react";
+import { DndContext, DragOverlay, useDraggable, useDroppable } from "@dnd-kit/core";
+import { toast } from "react-toastify";
+import { dealService } from "@/services/api/dealService";
+import ApperIcon from "@/components/ApperIcon";
+import AdvancedSearchPanel from "@/components/molecules/AdvancedSearchPanel";
+import DealCard from "@/components/organisms/DealCard";
+import DealDetailPanel from "@/components/organisms/DealDetailPanel";
+import AddDealModal from "@/components/organisms/AddDealModal";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Button from "@/components/atoms/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
+// Migrated from react-beautiful-dnd to @dnd-kit/core for React 18.3+ compatibility
+// @dnd-kit/core provides modern drag-and-drop with better accessibility and TypeScript support
+// No more defaultProps deprecation warnings and fully compatible with React 18+
 
 // Modern error boundary component using JavaScript default parameters (React 18.3+ recommended pattern)
 function ErrorBoundary({ children, fallback = <div>Something went wrong.</div> }) {
@@ -190,11 +189,13 @@ const handleSearch = useCallback((query) => {
   }, [deals, filterDeals, searchTerm, filters]);
 
   // Handle drag end with error handling
-  const handleDragEnd = useCallback(async (result) => {
-    if (!result?.destination) return;
+const handleDragEnd = useCallback(async (event) => {
+    const { active, over } = event;
+    
+    if (!over || !active) return;
 
-    const dealId = parseInt(result.draggableId);
-    const newStage = result.destination.droppableId;
+    const dealId = parseInt(active.id);
+    const newStage = over.id;
 
     // Validate the drag operation
     if (!dealId || !newStage) {
@@ -301,141 +302,30 @@ const getDealsByStage = (stage) => {
           )}
         />
       ) : (
-        <DragDropContext onDragEnd={handleDragEnd}>
+<DndContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
             {PIPELINE_STAGES.map((stage) => {
               const stageDeals = getDealsByStage(stage.id)
               const stageValue = getTotalValue(stage.id)
               
               return (
-                <div key={stage.id} className="flex flex-col">
-                  <Card className="mb-4">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-3 h-3 rounded-full ${stage.color}`}></div>
-                        <CardTitle className="text-sm font-medium">
-                          {stage.name}
-                        </CardTitle>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-<span>{stageDeals.length} deals</span>
-                        <span>{formatCurrency(stageValue)}</span>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                  
-                  <div className="flex-1">
-<ErrorBoundary 
-                      fallback={
-                        <div className="flex-1 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <p className="text-yellow-600 text-sm">Drag and drop unavailable for {stage?.name || 'this stage'}</p>
-                          <div className="mt-2 space-y-2">
-                            {stageDeals?.map((deal) => deal?.Id ? (
-                              <div key={deal.Id} className="cursor-pointer">
-                                <MemoizedDealCard 
-                                  deal={deal} 
-                                  onClick={() => handleDealClick(deal)}
-                                />
-                              </div>
-                            ) : null)}
-                          </div>
-                        </div>
-                      }
-                    >
-                      <Droppable droppableId={stage?.id || `stage-${Math.random()}`}>
-                        {(provided, snapshot) => {
-                          if (!provided || !stage?.id) {
-                            return (
-                              <div className="flex-1 p-4 bg-gray-50 rounded-lg">
-                                <p className="text-gray-500 text-sm">Loading stage...</p>
-                              </div>
-                            );
-                          }
-
-                          try {
-                            return (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.droppableProps}
-                                className={`flex-1 space-y-3 p-2 rounded-lg transition-colors ${
-                                  snapshot?.isDraggingOver 
-                                    ? 'bg-blue-50 border-2 border-blue-200 border-dashed' 
-                                    : 'bg-gray-50'
-                                }`}
-                                style={{ minHeight: '400px' }}
-                              >
-                                {Array.isArray(stageDeals) && stageDeals.map((deal, index) => {
-                                  if (!deal?.Id) return null;
-                                  
-                                  return (
-                                    <Draggable
-                                      key={`deal-${deal.Id}`}
-                                      draggableId={String(deal.Id)}
-                                      index={index}
-                                    >
-                                      {(provided, snapshot) => {
-                                        if (!provided) {
-                                          return (
-                                            <div className="p-4 bg-gray-100 rounded-lg">
-                                              <MemoizedDealCard 
-                                                deal={deal} 
-                                                onClick={() => handleDealClick(deal)}
-                                              />
-                                            </div>
-                                          );
-                                        }
-
-                                        try {
-                                          return (
-                                            <div
-                                              ref={provided.innerRef}
-                                              {...provided.draggableProps}
-                                              {...provided.dragHandleProps}
-                                              className={`transition-transform ${
-                                                snapshot?.isDragging ? 'rotate-2 scale-105 z-50' : ''
-                                              }`}
-                                            >
-                                              <MemoizedDealCard 
-                                                deal={deal} 
-                                                onClick={() => handleDealClick(deal)}
-                                              />
-                                            </div>
-                                          );
-                                        } catch (error) {
-                                          console.error('Draggable render error:', error);
-                                          return (
-                                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                              <p className="text-red-600 text-sm">Failed to render deal: {deal?.Name || 'Unknown'}</p>
-                                            </div>
-                                          );
-                                        }
-                                      }}
-                                    </Draggable>
-                                  );
-                                })}
-                                {provided.placeholder}
-                              </div>
-                            );
-                          } catch (error) {
-                            console.error('Droppable render error:', error);
-                            return (
-                              <div className="flex-1 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-red-600 text-sm">Failed to render drop zone for {stage?.name}</p>
-                              </div>
-                            );
-                          }
-                        }}
-                      </Droppable>
-                    </ErrorBoundary>
-                  </div>
-                </div>
-                );
-              })}
+                <StageColumn 
+                  key={stage.id} 
+                  stage={stage} 
+                  deals={stageDeals} 
+                  stageValue={stageValue}
+                  onDealClick={handleDealClick}
+                />
+              );
+            })}
           </div>
-        </DragDropContext>
+        </DndContext>
+      )}
+    </div>
+</DndContext>
       )}
 
-<AddDealModal
+      <AddDealModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddDeal}
@@ -449,7 +339,109 @@ const getDealsByStage = (stage) => {
         />
       )}
     </div>
-  )
+  );
+};
+
+// Draggable Deal Component
+function DraggableDeal({ deal, onDealClick }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: deal.Id,
+  });
+
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`transition-transform cursor-grab ${
+        isDragging ? 'rotate-2 scale-105 z-50 opacity-75' : ''
+      }`}
+    >
+      <MemoizedDealCard 
+        deal={deal} 
+        onClick={() => onDealClick(deal)}
+      />
+    </div>
+  );
 }
 
-export default DealsPage
+// Droppable Stage Column Component
+function StageColumn({ stage, deals, stageValue, onDealClick }) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: stage.id,
+  });
+
+  return (
+    <div className="flex flex-col">
+      <Card className="mb-4">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-3 h-3 rounded-full ${stage.color}`}></div>
+            <CardTitle className="text-sm font-medium">
+              {stage.name}
+            </CardTitle>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>{deals.length} deals</span>
+            <span>{formatCurrency(stageValue)}</span>
+          </div>
+        </CardHeader>
+      </Card>
+      
+      <div className="flex-1">
+        <ErrorBoundary 
+          fallback={
+            <div className="flex-1 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-600 text-sm">Drag and drop unavailable for {stage?.name || 'this stage'}</p>
+              <div className="mt-2 space-y-2">
+                {deals?.map((deal) => deal?.Id ? (
+                  <div key={deal.Id} className="cursor-pointer">
+                    <MemoizedDealCard 
+                      deal={deal} 
+                      onClick={() => onDealClick(deal)}
+                    />
+                  </div>
+                ) : null)}
+              </div>
+            </div>
+          }
+        >
+          <div
+            ref={setNodeRef}
+            className={`flex-1 space-y-3 p-2 rounded-lg transition-colors ${
+              isOver 
+                ? 'bg-blue-50 border-2 border-blue-200 border-dashed' 
+                : 'bg-gray-50'
+            }`}
+            style={{ minHeight: '400px' }}
+          >
+            {Array.isArray(deals) && deals.map((deal) => {
+              if (!deal?.Id) return null;
+              
+              return (
+                <DraggableDeal
+                  key={`deal-${deal.Id}`}
+                  deal={deal}
+                  onDealClick={onDealClick}
+                />
+              );
+            })}
+          </div>
+        </ErrorBoundary>
+      </div>
+    </div>
+  );
+}
+
+export default DealsPage;
