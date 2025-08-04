@@ -69,23 +69,19 @@ const handleSearch = useCallback(async (query) => {
     filterContacts(searchQuery, newFilters)
   }, [searchQuery, filters])
 
-  const filterContacts = useCallback(async (query, currentFilters) => {
+const filterContacts = useCallback(async (query, currentFilters) => {
     try {
-      let results = [...contacts]
+      let results = []
       
-      // Apply search query
+      // Apply search query using backend service
       if (query && query.trim()) {
-        const searchTerm = query.toLowerCase().trim()
-results = results.filter(contact => 
-          (contact.Name || contact.name || '').toLowerCase().includes(searchTerm) ||
-          (contact.email || '').toLowerCase().includes(searchTerm) ||
-          ((contact.companyName || contact.company || '')).toLowerCase().includes(searchTerm) ||
-          (contact.phone || '').includes(searchTerm)
-        )
+        results = await contactService.search(query)
+      } else {
+        results = [...contacts]
       }
       
       // Apply company filter
-if (currentFilters.company) {
+      if (currentFilters.company) {
         results = results.filter(contact =>
           (contact.companyName || contact.company || '').toLowerCase().includes(currentFilters.company.toLowerCase())
         )
@@ -113,7 +109,7 @@ if (currentFilters.company) {
       setFilteredContacts(results)
     } catch (err) {
       console.error("Error filtering contacts:", err)
-      toast.error("Filter failed. Please try again.")
+      toast.error("Search failed. Please try again.")
     }
   }, [contacts])
 
