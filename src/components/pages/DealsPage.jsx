@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Car
 // Note: react-beautiful-dnd shows defaultProps warnings in React 18.3+
 // This is a known library issue. Consider migrating to @dnd-kit/core for long-term compatibility.
 
-// Modern error boundary component
-function ErrorBoundary({ children, fallback }) {
+// Modern error boundary component using JavaScript default parameters (React 18.3+ recommended pattern)
+function ErrorBoundary({ children, fallback = <div>Something went wrong.</div> }) {
   const [hasError, setHasError] = useState(false);
   const [error, setError] = useState(null);
 
