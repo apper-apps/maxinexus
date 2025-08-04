@@ -83,7 +83,7 @@ const SortHeader = ({ field, children }) => (
                     <SortHeader field="lastContactDate">Last Contact</SortHeader>
                     <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
-                                      </th>
+                                                              </th>
                 </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -106,69 +106,70 @@ const SortHeader = ({ field, children }) => (
                                 </span></div>
                             <div className="text-sm font-medium text-gray-900">{contact.Name || contact.name}</div>
                         </div>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            {contact.companyName || contact.company ? <button
-                                onClick={() => onCompanySelect && onCompanySelect(contact.companyId || contact.companyName || contact.company)}
-                                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 text-left">
-                                {contact.companyName || contact.company}
-                            </button> : <span className="text-gray-400">No company</span>}
-                        </td>
-                        <td
-                            className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                            onClick={() => onContactSelect(contact)}>
-                            <div className="text-sm text-gray-900">{contact.email}</div>
-                        </td>
-                        <td
-                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 cursor-pointer"
-                            onClick={() => onContactSelect(contact)}>
-                            {contact.phone}
-                        </td>
-                        <td
-                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 cursor-pointer"
-                            onClick={() => onContactSelect(contact)}>
-                            {format(new Date(contact.lastContactDate), "MMM d, yyyy")}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        onQuickAction && onQuickAction(contact, "call");
-                                    }}
-                                    className="text-green-600 hover:text-green-700 transition-colors p-1 rounded hover:bg-green-50"
-                                    title="Log Call">
-                                    <ApperIcon name="Phone" size={16} />
-                                </button>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        onQuickAction && onQuickAction(contact, "follow-up");
-                                    }}
-                                    className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded hover:bg-blue-50"
-                                    title="Schedule Follow-up">
-                                    <ApperIcon name="Calendar" size={16} />
-                                </button>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        onEditContact(contact);
-                                    }}
-                                    className="text-primary hover:text-primary/80 transition-colors p-1 rounded hover:bg-primary/10"
-                                    title="Edit contact">
-                                    <ApperIcon name="Edit2" size={16} />
-                                </button>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        onDeleteContact(contact);
-                                    }}
-                                    className="text-red-600 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50"
-                                    title="Delete contact">
-                                    <ApperIcon name="Trash2" size={16} />
-                                </button>
-                            </div>
-                        </td>
-                    </td></tr>)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {contact.companyName || contact.company ? <button
+                            onClick={() => onCompanySelect && onCompanySelect(contact.companyId || contact.companyName || contact.company)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 text-left">
+                            {contact.companyName || contact.company}
+                        </button> : <span className="text-gray-400">No company</span>}
+                    </td>
+                    <td
+                        className="px-6 py-4 whitespace-nowrap cursor-pointer"
+                        onClick={() => onContactSelect(contact)}>
+                        <div className="text-sm text-gray-900">{contact.email}</div>
+                    </td>
+                    <td
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 cursor-pointer"
+                        onClick={() => onContactSelect(contact)}>
+                        {contact.phone}
+                    </td>
+                    <td
+                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 cursor-pointer"
+                        onClick={() => onContactSelect(contact)}>
+                        {format(new Date(contact.lastContactDate), "MMM d, yyyy")}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onQuickAction && onQuickAction(contact, "call");
+                                }}
+                                className="text-green-600 hover:text-green-700 transition-colors p-1 rounded hover:bg-green-50"
+                                title="Log Call">
+                                <ApperIcon name="Phone" size={16} />
+                            </button>
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onQuickAction && onQuickAction(contact, "follow-up");
+                                }}
+                                className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded hover:bg-blue-50"
+                                title="Schedule Follow-up">
+                                <ApperIcon name="Calendar" size={16} />
+                            </button>
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onEditContact(contact);
+                                }}
+                                className="text-primary hover:text-primary/80 transition-colors p-1 rounded hover:bg-primary/10"
+                                title="Edit contact">
+                                <ApperIcon name="Edit2" size={16} />
+                            </button>
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onDeleteContact(contact);
+                                }}
+                                className="text-red-600 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50"
+                                title="Delete contact">
+                                <ApperIcon name="Trash2" size={16} />
+                            </button>
+                        </div>
+                    </td>
+                </tr>)}
             </tbody>
         </table>
     </div>
