@@ -245,9 +245,17 @@ const getDealsByStage = (stage) => {
 
   const getTotalValue = (stage) => {
     return getDealsByStage(stage).reduce((sum, deal) => sum + (deal?.value || 0), 0);
+};
+
+  // Format currency utility function
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value || 0);
   };
-
-
   if (loading) return <Loading />
   if (error) return <Error message={error} />
 
@@ -292,21 +300,11 @@ const getDealsByStage = (stage) => {
               Add Deal
             </Button>
           )}
-        />
+/>
       ) : (
-<DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
             {PIPELINE_STAGES.map((stage) => {
-// Format currency utility function
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-};
-
               const stageDeals = getDealsByStage(stage.id)
               const stageValue = getTotalValue(stage.id)
               
