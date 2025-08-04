@@ -319,9 +319,6 @@ const getDealsByStage = (stage) => {
               );
             })}
           </div>
-        </DndContext>
-      )}
-    </div>
 </DndContext>
       )}
 
