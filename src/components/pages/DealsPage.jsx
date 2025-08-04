@@ -12,14 +12,8 @@ import Error from '@/components/ui/Error'
 import Empty from '@/components/ui/Empty'
 import Button from '@/components/atoms/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/atoms/Card'
-// Suppress react-beautiful-dnd defaultProps warning for React 18.3+ compatibility
-const originalWarn = console.warn;
-console.warn = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('defaultProps will be removed from memo components')) {
-    return;
-  }
-  originalWarn(...args);
-};
+// Note: react-beautiful-dnd shows defaultProps warnings in React 18.3+
+// This is a known library issue. Consider migrating to @dnd-kit/core for long-term compatibility.
 
 // Modern error boundary component
 function ErrorBoundary({ children, fallback }) {
